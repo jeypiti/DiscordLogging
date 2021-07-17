@@ -5,6 +5,7 @@ description = "Discord webhook handler for the logging module."
 authors = ["jeypiti <jeypiti@icloud.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/jeypiti/DiscordLogging"
 
 [tool.poetry.dependencies]
 python = "^3.9"
