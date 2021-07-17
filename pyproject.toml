@@ -3,6 +3,7 @@ name = "discord_logging"
 version = "0.1.0"
 description = "Discord webhook handler for the logging module."
 authors = ["jeypiti <jeypiti@icloud.com>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
