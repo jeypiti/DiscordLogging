@@ -12,7 +12,7 @@ color_output = true
 
 [tool.poetry]
 name = "discord_logging"
-version = "0.1.0"
+version = "1.0.0"
 description = "Discord webhook handler for the logging module."
 authors = ["jeypiti <jeypiti@icloud.com>"]
 license = "MIT"
