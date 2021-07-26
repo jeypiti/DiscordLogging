@@ -31,7 +31,16 @@ class DiscordWebhookHandler(Handler):
         :return: Whether the post request was successful.
         """
 
-        response = requests.post(self.url, data=dict(content=content[:2000]))
+        # send as normal message if content length doesn't exceed Discord's limits
+        # 1994 characters to account for triple backticks
+        if len(content) <= 1994:
+            kwargs = {"data": {"content": f"```{content}```"}}
+
+        # send as file otherwise
+        else:
+            kwargs = {"files": {"file": ("content.log", content.encode())}}
+
+        response = requests.post(self.url, **kwargs)
         start_time = monotonic()
 
         while not response.ok:
@@ -42,7 +51,7 @@ class DiscordWebhookHandler(Handler):
                 return False
 
             sleep(sleep_duration)
-            response = requests.post(self.url, data=dict(content=content[:2000]))
+            response = requests.post(self.url, **kwargs)
 
         return True
 
@@ -62,7 +71,7 @@ class DiscordWebhookHandler(Handler):
 
         queue_content = "\n".join(self.format(queued_record) for queued_record in self.queue)
         record_content = self.format(record) if record is not None else ""
-        success = self.post_webhook(f"```{queue_content}\n{record_content}```")
+        success = self.post_webhook(f"{queue_content}\n{record_content}")
 
         self.last_emit = now
         if success:
