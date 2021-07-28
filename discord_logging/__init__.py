@@ -75,7 +75,7 @@ class DiscordWebhookHandler(Handler):
 
         self.last_emit = now
         if success:
-            self.queue = []
+            self.queue.clear()
         else:
             assert record is not None
             self.queue.append(record)
