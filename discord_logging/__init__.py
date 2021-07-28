@@ -6,17 +6,17 @@ import requests
 
 
 class DiscordWebhookHandler(Handler):
-    def __init__(self, webhook_url: str, min_emit_interval: float = 1.0):
+    def __init__(self, webhook_url: str, emit_interval: float = 1.0):
         """Initialize a logging handler that posts to a Discord webhook.
 
         :param webhook_url: URL of the webhook.
-        :param min_emit_interval: The minimum interval between emits in seconds.
+        :param emit_interval: The minimum interval between emits in seconds.
         """
 
         super().__init__()
         self.url = webhook_url
 
-        self.interval = min_emit_interval
+        self.interval = emit_interval
         self.last_emit: float = 0
 
         self.queue: list[LogRecord] = []
