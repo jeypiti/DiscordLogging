@@ -29,6 +29,8 @@ class DiscordWebhookHandler(Handler):
         :param content: Content to be posted to the webhook.
         :param timeout: Time in seconds after which the operation should be aborted.
         :return: Whether the post request was successful.
+        :raises requests.HTTPError: If there are non-recoverable HTTP errors, most
+            likely due to bad configuration.
         """
 
         if not content:
