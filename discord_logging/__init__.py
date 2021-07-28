@@ -1,6 +1,5 @@
 from logging import Handler, LogRecord
 from time import monotonic, sleep
-from typing import Optional
 
 import requests
 
@@ -69,32 +68,36 @@ class DiscordWebhookHandler(Handler):
 
         return True
 
-    def emit(self, record: Optional[LogRecord]) -> None:
+    def emit(self, record: LogRecord) -> None:
         """
-        Emits a log record. The log record can be `None`, in which case the queue will
-        be flushed.
+        Handles emission of log records. If no record has been emitted within the
+        interval specified at handler initialization, attempt to post queue contents
+        and current record to webhook. Otherwise append record to internal queue.
 
-        :param record: Log record to emit or `None`.
+        If the post times out, leave queue intact and carry on.
+
+        :param record: Log record to emit.
         """
 
         now = monotonic()
 
-        if record is not None and self.last_emit + self.interval > now:
+        if self.last_emit + self.interval > now:
             self.queue.append(record)
             return
 
         queue_content = "\n".join(self.format(queued_record) for queued_record in self.queue)
-        record_content = self.format(record) if record is not None else ""
-        success = self.post_webhook(f"{queue_content}\n{record_content}")
+        success = self.post_webhook(f"{queue_content}\n{self.format(record)}")
 
         self.last_emit = now
         if success:
             self.queue.clear()
         else:
-            assert record is not None
             self.queue.append(record)
 
     def flush(self) -> None:
-        if self.queue:
-            # flush the queue
-            self.emit(None)
+        """Post queue contents to the webhook and clear queue if successful."""
+        queue_content = "\n".join(self.format(queued_record) for queued_record in self.queue)
+        success = self.post_webhook(queue_content)
+
+        if success:
+            self.queue.clear()
