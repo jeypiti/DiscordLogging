@@ -77,6 +77,7 @@ class DiscordWebhookHandler(Handler):
         if success:
             self.queue = []
         else:
+            assert record is not None
             self.queue.append(record)
 
     def flush(self) -> None:
