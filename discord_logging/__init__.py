@@ -43,18 +43,27 @@ class DiscordWebhookHandler(Handler):
         else:
             kwargs = {"files": {"file": ("content.log", content.encode())}}
 
-        response = requests.post(self.url, **kwargs)
+        resp = requests.post(self.url, **kwargs)
         start_time = monotonic()
 
-        while not response.ok:
-            sleep_duration = float(response.headers.get("x-ratelimit-reset-after", 2))
+        # attempt retries if post wasn't successful
+        while not resp.status_code < 400:
+
+            # abort if not a transient error
+            if resp.status_code not in {429, 502}:
+                raise requests.HTTPError(
+                    f"{resp.status_code} HTTP Error: {resp.reason} for webhook {self.url}",
+                    response=resp,
+                )
+
+            sleep_duration = float(resp.headers.get("x-ratelimit-reset-after", 2))
 
             # return if timeout would be exceeded after sleep
             if monotonic() - start_time + sleep_duration > timeout:
                 return False
 
             sleep(sleep_duration)
-            response = requests.post(self.url, **kwargs)
+            resp = requests.post(self.url, **kwargs)
 
         return True
 
