@@ -31,6 +31,9 @@ class DiscordWebhookHandler(Handler):
         :return: Whether the post request was successful.
         """
 
+        if not content:
+            return True
+
         # send as normal message if content length doesn't exceed Discord's limits
         # 1994 characters to account for triple backticks
         if len(content) <= 1994:
