@@ -46,14 +46,14 @@ discord_handler.addFilter(filter)
 
 **Rate Limits**
 
-Discord webhooks are subject to [rate limits](https://ptb.discord.com/developers/docs/topics/rate-limits). The handler keeps track of when it last sent a request to the webhook to ensure that these limits will not be reached. This can be configured during initialization via the `min_emit_interval` argument:
+Discord webhooks are subject to [rate limits](https://ptb.discord.com/developers/docs/topics/rate-limits). The handler keeps track of when it last sent a request to the webhook to ensure that these limits will not be reached. This can be configured during initialization via the `emit_interval` argument:
 
 ```py
-discord_handler = discord_logging.DiscordWebhookHandler("<webhook url>", min_emit_interval=2.0)
+discord_handler = discord_logging.DiscordWebhookHandler("<webhook url>", emit_interval=2)
 ```
 
 Here we would send a message to Discord at most every two seconds (default: 1 second).
 
 The handler maintains and internal queue of records that still need to be sent out. This queue will be flushed the next time a message is sent out to the webhook.
 
-*Note:* You may remove this artificial limitation of the send rate by setting `min_emit_interval=0.`. If the webhook quota is temporarily used up, the handler will go to sleep until quota is available again. This behavior may lead to problems depending on your use case.
+*Note:* You may remove this artificial limitation of the send rate by setting `emit_interval=0`. If the webhook quota is temporarily used up, the handler will go to sleep until quota is available again. This behavior may lead to problems depending on your use case.
