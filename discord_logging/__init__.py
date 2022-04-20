@@ -5,6 +5,12 @@ from typing import Final
 import requests
 
 
+# https://discord.com/developers/docs/resources/webhook#execute-webhook
+success_status_codes = {200, 204}
+# https://discord.com/developers/docs/topics/opcodes-and-status-codes#http
+transient_error_status_codes = {429, 502}
+
+
 class DiscordWebhookHandler(Handler):
     def __init__(self, webhook_url: str, emit_interval: float = 1.0, timeout: float = 5.0):
         """Initialize a logging handler that posts to a Discord webhook.
@@ -54,10 +60,10 @@ class DiscordWebhookHandler(Handler):
             return False
 
         # attempt retries if post wasn't successful
-        while resp.status_code != 204:
+        while resp.status_code not in success_status_codes:
 
             # abort if not a transient error
-            if resp.status_code not in {429, 502}:
+            if resp.status_code not in transient_error_status_codes:
                 raise requests.HTTPError(
                     f"{resp.status_code} HTTP Error: {resp.reason} for webhook {self.url}",
                     response=resp,
