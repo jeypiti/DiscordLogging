@@ -1,5 +1,6 @@
 from logging import Handler, LogRecord
 from time import monotonic, sleep
+from typing import Final
 
 import requests
 
@@ -14,10 +15,10 @@ class DiscordWebhookHandler(Handler):
         """
 
         super().__init__()
-        self.url = webhook_url
+        self.url: Final[str] = webhook_url
 
-        self.interval = emit_interval
-        self.timeout = timeout
+        self.interval: Final[float] = emit_interval
+        self.timeout: Final[float] = timeout
         self.last_emit: float = 0
 
         self.queue: list[LogRecord] = []
