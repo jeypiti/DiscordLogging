@@ -21,7 +21,7 @@ repository = "https://github.com/jeypiti/DiscordLogging"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-requests = "^2.26.0"
+requests = "^2.27.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
