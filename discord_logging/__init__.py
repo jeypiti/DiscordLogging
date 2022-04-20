@@ -44,7 +44,11 @@ class DiscordWebhookHandler(Handler):
         else:
             kwargs = {"files": {"file": ("content.log", content.encode())}}
 
-        resp = requests.post(self.url, **kwargs)
+        try:
+            resp = requests.post(self.url, **kwargs)
+        except requests.ConnectionError:
+            return False
+
         start_time = monotonic()
 
         # attempt retries if post wasn't successful
@@ -64,7 +68,10 @@ class DiscordWebhookHandler(Handler):
                 return False
 
             sleep(sleep_duration)
-            resp = requests.post(self.url, **kwargs)
+            try:
+                resp = requests.post(self.url, **kwargs)
+            except requests.ConnectionError:
+                return False
 
         return True
 
