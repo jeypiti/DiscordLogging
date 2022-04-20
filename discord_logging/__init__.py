@@ -5,28 +5,29 @@ import requests
 
 
 class DiscordWebhookHandler(Handler):
-    def __init__(self, webhook_url: str, emit_interval: float = 1.0):
+    def __init__(self, webhook_url: str, emit_interval: float = 1.0, timeout: float = 5.0):
         """Initialize a logging handler that posts to a Discord webhook.
 
         :param webhook_url: URL of the webhook.
         :param emit_interval: The minimum interval between emits in seconds.
+        :param timeout: The duration after which the webhook requests time out.
         """
 
         super().__init__()
         self.url = webhook_url
 
         self.interval = emit_interval
+        self.timeout = timeout
         self.last_emit: float = 0
 
         self.queue: list[LogRecord] = []
 
-    def post_webhook(self, content: str, timeout: float = 5.0) -> bool:
+    def post_webhook(self, content: str) -> bool:
         """
         Post content to the webhook, retrying on rate limit errors for a maximum
         of `timeout` seconds.
 
         :param content: Content to be posted to the webhook.
-        :param timeout: Time in seconds after which the operation should be aborted.
         :return: Whether the post request was successful.
         :raises requests.HTTPError: If there are non-recoverable HTTP errors, most
             likely due to bad configuration.
@@ -34,6 +35,8 @@ class DiscordWebhookHandler(Handler):
 
         if not content:
             return True
+
+        start_time = monotonic()
 
         # send as normal message if content length doesn't exceed Discord's limits
         # 1994 characters to account for triple backticks
@@ -45,11 +48,9 @@ class DiscordWebhookHandler(Handler):
             kwargs = {"files": {"file": ("content.log", content.encode())}}
 
         try:
-            resp = requests.post(self.url, **kwargs)
-        except requests.ConnectionError:
+            resp = requests.post(self.url, timeout=self.timeout, **kwargs)
+        except (requests.ConnectionError, requests.Timeout):
             return False
-
-        start_time = monotonic()
 
         # attempt retries if post wasn't successful
         while resp.status_code != 204:
@@ -64,13 +65,13 @@ class DiscordWebhookHandler(Handler):
             sleep_duration = float(resp.headers.get("x-ratelimit-reset-after", 2))
 
             # return if timeout would be exceeded after sleep
-            if monotonic() - start_time + sleep_duration > timeout:
+            if monotonic() - start_time + sleep_duration > self.timeout:
                 return False
 
             sleep(sleep_duration)
             try:
-                resp = requests.post(self.url, **kwargs)
-            except requests.ConnectionError:
+                resp = requests.post(self.url, timeout=self.timeout, **kwargs)
+            except (requests.ConnectionError, requests.Timeout):
                 return False
 
         return True
