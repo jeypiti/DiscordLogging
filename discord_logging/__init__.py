@@ -52,7 +52,7 @@ class DiscordWebhookHandler(Handler):
         start_time = monotonic()
 
         # attempt retries if post wasn't successful
-        while not resp.status_code < 400:
+        while resp.status_code != 204:
 
             # abort if not a transient error
             if resp.status_code not in {429, 502}:
